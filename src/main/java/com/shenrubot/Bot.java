@@ -11,7 +11,7 @@ import javax.security.auth.login.LoginException;
 public class Bot extends ListenerAdapter {
     public static String key = "NzAwODMwMTI5MjY5NjM3MjMw.XpopHA.wlNTRwROa0_BonvKEvVd3AWICOY";
     public static void main(String[] args) throws LoginException, InterruptedException {
-        JDA jda = new JDABuilder(key).build();
+        JDA jda = new JDABuilder(key).addEventListeners(new Bot()).build();
 
         jda.awaitReady();
 
