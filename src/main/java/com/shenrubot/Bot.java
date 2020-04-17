@@ -19,7 +19,8 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
-        if(event.isFromType(ChannelType.PRIVATE){
+        System.out.println("Message Recieved!");
+        if(event.isFromType(ChannelType.PRIVATE)){
             System.out.println("Message Recieved!");
         }
     }
