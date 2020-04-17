@@ -2,7 +2,7 @@ package com.shenrubot;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -20,8 +20,9 @@ public class Bot extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
         System.out.println("Message Recieved!");
-        if(event.isFromType(ChannelType.PRIVATE)){
-            System.out.println("Message Recieved!");
+        if (!event.getAuthor().isBot()) {
+            MessageChannel channel = event.getChannel();
+            channel.sendMessage("Pong!").queue();
         }
     }
 }
