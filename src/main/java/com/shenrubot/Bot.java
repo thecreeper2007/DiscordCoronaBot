@@ -1,7 +1,9 @@
 package com.shenrubot;
 //https://pastebin.com/03sVdXUa
+
 //jda
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -10,27 +12,33 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 
 //java.*
-
 //net
 //exceptions
 
+@SuppressWarnings("unchecked")
 public class Bot extends ListenerAdapter {
+    public static String keyloc = "/Users/the_creeper2007/Desktop/DiscordAutoReply/src/main/java/com/shenrubot/APIkey.txt";
+
     public static Map<String, String> map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 
-    public static String key = "NzAwODMwMTI5MjY5NjM3MjMw.XpopHA.wlNTRwROa0_BonvKEvVd3AWICOY";
     public static String baseURL = "https://api.thevirustracker.com/free-api?countryTotal=";
 
     public static void CountryCodes() {
-        map.put("Andorra, Principality Of", "AD");
+        map.put("ALL", "ALL");
+        map.put("Andorra", "AD");
         map.put("United Arab Emirates", "AE");
-        map.put("Afghanistan, Islamic State Of", "AF");
+        map.put("Afghanistan", "AF");
         map.put("Antigua And Barbuda", "AG");
         map.put("Anguilla", "AI");
         map.put("Albania", "AL");
@@ -64,7 +72,7 @@ public class Bot extends ListenerAdapter {
         map.put("Belarus", "BY");
         map.put("Belize", "BZ");
         map.put("Canada", "CA");
-        map.put("Cocos (Keeling) Islands", "CC");
+        map.put("CocosIslands", "CC");
         map.put("Central African Republic", "CF");
         map.put("Congo, The Democratic Republic Of The", "CD");
         map.put("Congo", "CG");
@@ -273,14 +281,38 @@ public class Bot extends ListenerAdapter {
         map.put("Zaire", "ZR");
         map.put("Zimbabwe", "ZW");
 
+        //alternative names
+        map.put("US", "US");
+        map.put("USA", "US");
+    }
+
+    public static String getToken() {
+        // pass the path to the file as a parameter
+        File file = new File(keyloc);
+        try {
+            Scanner sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                return sc.nextLine();
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("cannot find api key file");
+            return null;
+        }
+        return null;
     }
 
     public static void main(String[] args) throws LoginException, InterruptedException {
         CountryCodes();
-        JDA jda = new JDABuilder(key).addEventListeners(new Bot()).build();
+        try {
+            String key = getToken();
 
-        jda.awaitReady();
 
+            JDA jda = new JDABuilder(key).addEventListeners(new Bot()).build();
+
+            jda.awaitReady();
+        } catch (Exception e) {
+            System.out.println("Cannot login due to errors");
+        }
     }
 
     public String httpGET(URL url) {
@@ -302,6 +334,7 @@ public class Bot extends ListenerAdapter {
         return "There have been a error at Exception e in http get, try again.";
     }
 
+
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
         StringBuilder req = new StringBuilder();
@@ -309,24 +342,75 @@ public class Bot extends ListenerAdapter {
         String msg = event.getMessage().getContentDisplay();
         MessageChannel channel = event.getChannel();
         if (msg.startsWith("corona?")) {
-            String country = msg.substring(8);
+            String country;
+            try {
+                country = msg.substring(8);
+            } catch (StringIndexOutOfBoundsException e) {
+                country = "ALL";
+                System.exit(1);
+            }
             if (map.get(country) == null) {
                 channel.sendMessage("Please enter a valid country!").queue();
                 return;
             }
             country = map.get(country);
-            req.append(country.toUpperCase().trim());
+            if (!country.equals("ALL")) {
+                req.append(country.toUpperCase().trim());
+            } else {
+                req.setLength(0);
+                req.append("https://api.thevirustracker.com/free-api?global=stats");
+            }
             try {
+
                 URL url = new URL(req.toString());
                 String data = httpGET(url);
+
+                //extract the data
                 String title = data.substring(data.indexOf("title") + 8, data.indexOf(",", data.indexOf("title") + 7) - 1);
                 String totalCases = data.substring(data.indexOf("total_cases") + 13, data.indexOf(",", data.indexOf("total_cases") + 12));
                 String totalRecovered = data.substring(data.indexOf("total_recovered") + 17, data.indexOf(",", data.indexOf("total_recovered")));
-
                 String totalDeaths = data.substring(data.indexOf("total_deaths") + 14, data.indexOf(",", data.indexOf("total_deaths")));
                 String totalSeriousCases = data.substring(data.indexOf("total_serious_cases") + 21, data.indexOf(",", data.indexOf("total_serious_cases")));
                 String DangerRanking = data.substring(data.indexOf("total_danger_rank") + 19, data.indexOf(",", data.indexOf("total_danger_rank") - 2));
                 String newCases = data.substring(data.indexOf("total_new_cases_today") + 23, data.indexOf(",", data.indexOf("total_new_cases_today")));
+
+                //create embed
+                EmbedBuilder eb = new EmbedBuilder();
+
+
+                eb.setTitle("Coronavirus Stats for " + title, null);
+                //eb.setColor();
+
+                //add description of the virus from wikipedia
+                eb.setDescription("Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2). " +
+                        "The disease was first identified in December 2019 in Wuhan, the capital of China's Hubei province, and has since spread globally.");
+
+
+                //add data
+                eb.addField("Total cases", totalCases, true);
+                eb.addField("Total recoveries", totalRecovered, true);
+                eb.addField("Total deaths", totalDeaths, true);
+                eb.addField("Total serious cases", totalSeriousCases, true);
+                eb.addField("New cases", newCases, true);
+                eb.addField("Danger rank", DangerRanking, true);
+
+
+                //add a footer
+                Instant instant = Instant.now();
+                eb.setFooter("Live coronavirus stats provided by: https://thevirustracker.com/ Retrieved at: " + instant.toString(), null);
+
+                //add a thumbnail
+                eb.setThumbnail("https://upload.wikimedia.org/wikipedia/commons/8/82/SARS-CoV-2_without_background.png");
+
+                //add a image
+                //eb.setImage("https://phil.cdc.gov//PHIL_Images/23311/23311_lores.jpg");
+
+                //send it
+                channel.sendMessage(eb.build()).queue();
+
+
+                /*
+                channel.sendMessage("https://en.wikipedia.org/wiki/Coronavirus_disease_2019").queue();
                 channel.sendMessage("==== Coronavirus stats for: " + title + "====").queue();
                 channel.sendMessage("Total Cases: " + totalCases).queue();
                 channel.sendMessage("Total Recovered Cases: " + totalRecovered).queue();
@@ -334,12 +418,16 @@ public class Bot extends ListenerAdapter {
                 channel.sendMessage("Total Serious Cases: " + totalSeriousCases).queue();
                 channel.sendMessage("Danger Rank: " + DangerRanking).queue();
                 channel.sendMessage("Total New Cases Today: " + newCases).queue();
-                channel.sendMessage("Sources: http://thevirustracker.com").queue();
+                channel.sendMessage("Sources: http://thevirustracker.com/").queue();
+                */
+
                 //System.out.println(title);
                 //System.out.println(totalCases);
                 //System.out.println(totalRecovered);
                 //System.out.println(totalDeaths);
                 //System.out.println(totalSeriousCases);
+
+                //print raw debugging data
                 System.out.println(httpGET(url));
 
             } catch (Exception e) {

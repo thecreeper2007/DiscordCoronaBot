@@ -210,3 +210,7 @@ local.properties
 .apt_generated
 
 .sts4-cache/
+
+#APIkey
+APIkey.txt
+
