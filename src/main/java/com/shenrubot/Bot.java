@@ -330,8 +330,9 @@ public class Bot extends ListenerAdapter {
             return content.toString();
         } catch (Exception e) {
             e.printStackTrace();
+            return "There have been a error at Exception e in http get, try again.";
         }
-        return "There have been a error at Exception e in http get, try again.";
+
     }
 
 
@@ -347,7 +348,6 @@ public class Bot extends ListenerAdapter {
                 country = msg.substring(8);
             } catch (StringIndexOutOfBoundsException e) {
                 country = "ALL";
-                System.exit(1);
             }
             if (map.get(country) == null) {
                 channel.sendMessage("Please enter a valid country!").queue();
