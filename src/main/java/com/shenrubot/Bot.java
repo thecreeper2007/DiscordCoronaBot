@@ -16,12 +16,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Instant;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
+//import java.time.Instant;
 //java.*
 //net
 //exceptions
@@ -302,16 +302,17 @@ public class Bot extends ListenerAdapter {
     }
 
     public static void main(String[] args) throws LoginException, InterruptedException {
+        //init map for country codes
         CountryCodes();
+
+        //login
         try {
             String key = getToken();
-
-
             JDA jda = new JDABuilder(key).addEventListeners(new Bot()).build();
-
             jda.awaitReady();
         } catch (Exception e) {
             System.out.println("Cannot login due to errors");
+            System.exit(1);
         }
     }
 
@@ -335,19 +336,27 @@ public class Bot extends ListenerAdapter {
 
     }
 
-
+    public String getCurrentTime() {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return dateFormat.format(date);
+    }
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
+        boolean isCountry = true;
         StringBuilder req = new StringBuilder();
         req.append(baseURL);
         String msg = event.getMessage().getContentDisplay();
         MessageChannel channel = event.getChannel();
+        String data;
         if (msg.startsWith("corona?")) {
             String country;
             try {
                 country = msg.substring(8);
             } catch (StringIndexOutOfBoundsException e) {
                 country = "ALL";
+                isCountry = false;
             }
             if (map.get(country) == null) {
                 channel.sendMessage("Please enter a valid country!").queue();
@@ -360,25 +369,32 @@ public class Bot extends ListenerAdapter {
                 req.setLength(0);
                 req.append("https://api.thevirustracker.com/free-api?global=stats");
             }
+            URL url;
             try {
 
-                URL url = new URL(req.toString());
-                String data = httpGET(url);
-
+                url = new URL(req.toString());
+                data = httpGET(url);
+            } catch (MalformedURLException e) {
+                channel.sendMessage("There have been a MalformedURLException.  Try again.").queue();
+                return;
+            }
                 //extract the data
                 String title = data.substring(data.indexOf("title") + 8, data.indexOf(",", data.indexOf("title") + 7) - 1);
                 String totalCases = data.substring(data.indexOf("total_cases") + 13, data.indexOf(",", data.indexOf("total_cases") + 12));
                 String totalRecovered = data.substring(data.indexOf("total_recovered") + 17, data.indexOf(",", data.indexOf("total_recovered")));
                 String totalDeaths = data.substring(data.indexOf("total_deaths") + 14, data.indexOf(",", data.indexOf("total_deaths")));
                 String totalSeriousCases = data.substring(data.indexOf("total_serious_cases") + 21, data.indexOf(",", data.indexOf("total_serious_cases")));
-                String DangerRanking = data.substring(data.indexOf("total_danger_rank") + 19, data.indexOf(",", data.indexOf("total_danger_rank") - 2));
+            String DangerRanking = data.substring(data.indexOf("total_danger_rank") + 19, data.indexOf("}", data.indexOf("total_danger_rank")));
                 String newCases = data.substring(data.indexOf("total_new_cases_today") + 23, data.indexOf(",", data.indexOf("total_new_cases_today")));
 
                 //create embed
                 EmbedBuilder eb = new EmbedBuilder();
 
-
+            if (isCountry) {
                 eb.setTitle("Coronavirus Stats for " + title, null);
+            } else {
+                eb.setTitle("World Coronavirus Stats", null);
+            }
                 //eb.setColor();
 
                 //add description of the virus from wikipedia
@@ -392,12 +408,16 @@ public class Bot extends ListenerAdapter {
                 eb.addField("Total deaths", totalDeaths, true);
                 eb.addField("Total serious cases", totalSeriousCases, true);
                 eb.addField("New cases", newCases, true);
+            if (isCountry) {
                 eb.addField("Danger rank", DangerRanking, true);
+            }
 
 
                 //add a footer
-                Instant instant = Instant.now();
-                eb.setFooter("Live coronavirus stats provided by: https://thevirustracker.com/ Retrieved at: " + instant.toString(), null);
+            //Instant instant = Instant.instant();
+
+            String time = getCurrentTime();
+            eb.setFooter("Live coronavirus stats provided by: https://thevirustracker.com/ Retrieved at: " + time + " UTC", null);
 
                 //add a thumbnail
                 eb.setThumbnail("https://upload.wikimedia.org/wikipedia/commons/8/82/SARS-CoV-2_without_background.png");
@@ -408,32 +428,8 @@ public class Bot extends ListenerAdapter {
                 //send it
                 channel.sendMessage(eb.build()).queue();
 
-
-                /*
-                channel.sendMessage("https://en.wikipedia.org/wiki/Coronavirus_disease_2019").queue();
-                channel.sendMessage("==== Coronavirus stats for: " + title + "====").queue();
-                channel.sendMessage("Total Cases: " + totalCases).queue();
-                channel.sendMessage("Total Recovered Cases: " + totalRecovered).queue();
-                channel.sendMessage("Total Deaths: " + totalDeaths).queue();
-                channel.sendMessage("Total Serious Cases: " + totalSeriousCases).queue();
-                channel.sendMessage("Danger Rank: " + DangerRanking).queue();
-                channel.sendMessage("Total New Cases Today: " + newCases).queue();
-                channel.sendMessage("Sources: http://thevirustracker.com/").queue();
-                */
-
-                //System.out.println(title);
-                //System.out.println(totalCases);
-                //System.out.println(totalRecovered);
-                //System.out.println(totalDeaths);
-                //System.out.println(totalSeriousCases);
-
                 //print raw debugging data
                 System.out.println(httpGET(url));
-
-            } catch (Exception e) {
-                channel.sendMessage("There have been a MalformedURLException.  Try again.").queue();
-                return;
-            }
 
 
             //System.out.println(req.toString());
