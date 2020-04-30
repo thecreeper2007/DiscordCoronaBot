@@ -6,17 +6,16 @@ package com.shenrubot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -25,6 +24,9 @@ import java.util.*;
 //java.*
 //net
 //exceptions
+
+//TODO coverage for area with no cases aka antartica
+
 
 @SuppressWarnings("unchecked")
 public class Bot extends ListenerAdapter {
@@ -109,7 +111,7 @@ public class Bot extends ListenerAdapter {
         map.put("Micronesia", "FM");
         map.put("Faroe Islands", "FO");
         map.put("France", "FR");
-        map.put("France (European Territory)", "FX");
+        map.put("France Europe Territory", "FX");
         map.put("Gabon", "GA");
         map.put("Great Britain", "UK");
         map.put("Grenada", "GD");
@@ -147,7 +149,7 @@ public class Bot extends ListenerAdapter {
         map.put("Jordan", "JO");
         map.put("Japan", "JP");
         map.put("Kenya", "KE");
-        map.put("Kyrgyz Republic (Kyrgyzstan)", "KG");
+        map.put("Kyrgyz Republic", "KG");
         map.put("Cambodia, Kingdom Of", "KH");
         map.put("Kiribati", "KI");
         map.put("Comoros", "KM");
@@ -179,7 +181,7 @@ public class Bot extends ListenerAdapter {
         map.put("Mongolia", "MN");
         map.put("Macau", "MO");
         map.put("Northern Mariana Islands", "MP");
-        map.put("Martinique (French)", "MQ");
+        map.put("Martinique", "MQ");
         map.put("Mauritania", "MR");
         map.put("Montserrat", "MS");
         map.put("Malta", "MT");
@@ -190,7 +192,7 @@ public class Bot extends ListenerAdapter {
         map.put("Malaysia", "MY");
         map.put("Mozambique", "MZ");
         map.put("Namibia", "NA");
-        map.put("New Caledonia (French)", "NC");
+        map.put("New Caledonia", "NC");
         map.put("Niger", "NE");
         map.put("Norfolk Island", "NF");
         map.put("Nigeria", "NG");
@@ -199,7 +201,7 @@ public class Bot extends ListenerAdapter {
         map.put("Norway", "NO");
         map.put("Nepal", "NP");
         map.put("Nauru", "NR");
-        map.put("Neutral Zone", "NT");
+        //map.put("Neutral Zone", "NT");
         map.put("Niue", "NU");
         map.put("New Zealand", "NZ");
         map.put("Oman", "OM");
@@ -236,7 +238,7 @@ public class Bot extends ListenerAdapter {
         map.put("Senegal", "SN");
         map.put("Somalia", "SO");
         map.put("Suriname", "SR");
-        map.put("Saint Tome (Sao Tome) And Principe", "ST");
+        map.put("Saint Tome", "ST");
         map.put("Former USSR", "SU");
         map.put("El Salvador", "SV");
         map.put("Syria", "SY");
@@ -288,6 +290,7 @@ public class Bot extends ListenerAdapter {
 
     public static String getToken() {
         // pass the path to the file as a parameter
+
         File file = new File(keyloc);
         try {
             Scanner sc = new Scanner(file);
@@ -295,8 +298,9 @@ public class Bot extends ListenerAdapter {
                 return sc.nextLine();
             }
         } catch (FileNotFoundException e) {
-            System.out.println("cannot find api key file");
-            return null;
+
+            System.out.println("cannot find api key file, Assuning running through heroku");
+            return System.getenv("KEY");
         }
         return null;
     }
@@ -310,12 +314,18 @@ public class Bot extends ListenerAdapter {
             String key = getToken();
             JDA jda = new JDABuilder(key).addEventListeners(new Bot()).build();
             jda.awaitReady();
+            //set game
+            jda.getPresence().setActivity(Activity.watching("COVID-19 | Corona?"));
+
+
         } catch (Exception e) {
-            System.out.println("Cannot login due to errors");
+            System.err.println("Cannot login to Discord");
             System.exit(1);
         }
     }
 
+
+    //make http get request to get up-to-date coronavirus stats
     public String httpGET(URL url) {
         try {
 
@@ -329,19 +339,30 @@ public class Bot extends ListenerAdapter {
             }
             in.close();
             return content.toString();
-        } catch (Exception e) {
+        } catch (ProtocolException e) {
             e.printStackTrace();
-            return "There have been a error at Exception e in http get, try again.";
+            System.err.println("ProtocolException cought");
+            return "There have been a networking protocol exception";
+        } catch (IOException i) {
+            i.printStackTrace();
+            System.err.println("IOException cought");
+            return "There have been an IO error";
+
         }
 
     }
 
+
+    //get current timestamp for footer
     public String getCurrentTime() {
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss:SSS");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return dateFormat.format(date);
     }
+
+
+    //My "main" function
     @Override
     public void onMessageReceived(MessageReceivedEvent event){
         boolean isCountry = true;
@@ -375,61 +396,62 @@ public class Bot extends ListenerAdapter {
                 url = new URL(req.toString());
                 data = httpGET(url);
             } catch (MalformedURLException e) {
+                System.err.println("MalformedURLException onMessageRecieved");
                 channel.sendMessage("There have been a MalformedURLException.  Try again.").queue();
                 return;
             }
-                //extract the data
-                String title = data.substring(data.indexOf("title") + 8, data.indexOf(",", data.indexOf("title") + 7) - 1);
-                String totalCases = data.substring(data.indexOf("total_cases") + 13, data.indexOf(",", data.indexOf("total_cases") + 12));
-                String totalRecovered = data.substring(data.indexOf("total_recovered") + 17, data.indexOf(",", data.indexOf("total_recovered")));
-                String totalDeaths = data.substring(data.indexOf("total_deaths") + 14, data.indexOf(",", data.indexOf("total_deaths")));
-                String totalSeriousCases = data.substring(data.indexOf("total_serious_cases") + 21, data.indexOf(",", data.indexOf("total_serious_cases")));
+            //extract the data
+            String title = data.substring(data.indexOf("title") + 8, data.indexOf(",", data.indexOf("title") + 7) - 1);
+            String totalCases = data.substring(data.indexOf("total_cases") + 13, data.indexOf(",", data.indexOf("total_cases") + 12));
+            String totalRecovered = data.substring(data.indexOf("total_recovered") + 17, data.indexOf(",", data.indexOf("total_recovered")));
+            String totalDeaths = data.substring(data.indexOf("total_deaths") + 14, data.indexOf(",", data.indexOf("total_deaths")));
+            String totalSeriousCases = data.substring(data.indexOf("total_serious_cases") + 21, data.indexOf(",", data.indexOf("total_serious_cases")));
             String DangerRanking = data.substring(data.indexOf("total_danger_rank") + 19, data.indexOf("}", data.indexOf("total_danger_rank")));
-                String newCases = data.substring(data.indexOf("total_new_cases_today") + 23, data.indexOf(",", data.indexOf("total_new_cases_today")));
+            String newCases = data.substring(data.indexOf("total_new_cases_today") + 23, data.indexOf(",", data.indexOf("total_new_cases_today")));
 
-                //create embed
-                EmbedBuilder eb = new EmbedBuilder();
+            //create embed
+            EmbedBuilder eb = new EmbedBuilder();
 
             if (isCountry) {
                 eb.setTitle("Coronavirus Stats for " + title, null);
             } else {
                 eb.setTitle("World Coronavirus Stats", null);
             }
-                //eb.setColor();
+            //eb.setColor();
 
-                //add description of the virus from wikipedia
-                eb.setDescription("Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2). " +
-                        "The disease was first identified in December 2019 in Wuhan, the capital of China's Hubei province, and has since spread globally.");
+            //add description of the virus from wikipedia
+            eb.setDescription("Coronavirus disease 2019 (COVID-19) is an infectious disease caused by severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2). " +
+                    "The disease was first identified in December 2019 in Wuhan, the capital of China's Hubei province, and has since spread globally.");
 
 
-                //add data
-                eb.addField("Total cases", totalCases, true);
-                eb.addField("Total recoveries", totalRecovered, true);
-                eb.addField("Total deaths", totalDeaths, true);
-                eb.addField("Total serious cases", totalSeriousCases, true);
-                eb.addField("New cases", newCases, true);
+            //add data
+            eb.addField("Total cases", totalCases, true);
+            eb.addField("Total recoveries", totalRecovered, true);
+            eb.addField("Total deaths", totalDeaths, true);
+            eb.addField("Total serious cases", totalSeriousCases, true);
+            eb.addField("New cases", newCases, true);
             if (isCountry) {
                 eb.addField("Danger rank", DangerRanking, true);
             }
 
 
-                //add a footer
+            //add a footer
             //Instant instant = Instant.instant();
 
             String time = getCurrentTime();
             eb.setFooter("Live coronavirus stats provided by: https://thevirustracker.com/ Retrieved at: " + time + " UTC", null);
 
-                //add a thumbnail
-                eb.setThumbnail("https://upload.wikimedia.org/wikipedia/commons/8/82/SARS-CoV-2_without_background.png");
+            //add a thumbnail
+            eb.setThumbnail("https://upload.wikimedia.org/wikipedia/commons/8/82/SARS-CoV-2_without_background.png");
 
-                //add a image
-                //eb.setImage("https://phil.cdc.gov//PHIL_Images/23311/23311_lores.jpg");
+            //add a image
+            //eb.setImage("https://phil.cdc.gov//PHIL_Images/23311/23311_lores.jpg");
 
-                //send it
-                channel.sendMessage(eb.build()).queue();
+            //send it
+            channel.sendMessage(eb.build()).queue();
 
-                //print raw debugging data
-                System.out.println(httpGET(url));
+            //print raw debugging data
+            System.out.println(httpGET(url));
 
 
             //System.out.println(req.toString());
