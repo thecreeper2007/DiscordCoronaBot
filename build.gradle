@@ -15,7 +15,12 @@ repositories {
 }
 
 dependencies {
+
+    //jda
     compile "net.dv8tion:JDA:$jdaVersion"
+
+    // https://mvnrepository.com/artifact/org.json/json
+    compile group: 'org.json', name: 'json', version: '20200518'
 }
 
 compileJava.options.encoding = 'UTF-8'

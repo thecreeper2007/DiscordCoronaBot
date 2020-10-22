@@ -361,9 +361,11 @@ public class Bot extends ListenerAdapter {
     public void getGuildInfo(MessageReceivedEvent event) throws MalformedURLException {
         URL myURL = new URL(hypixelGuildURL);
         String response = httpGET(myURL);
-        System.out.println(response);
+        //System.out.println(response);
 
         JSONObject obj = new JSONObject(response);
+
+
         System.out.println(obj.getString("name"));
 
 
