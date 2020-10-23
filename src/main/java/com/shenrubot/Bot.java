@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
@@ -358,18 +359,63 @@ public class Bot extends ListenerAdapter {
 
     }
 
-    public void getGuildInfo(MessageReceivedEvent event) throws MalformedURLException {
+    public void getGuildInfo(@NotNull MessageReceivedEvent event) throws MalformedURLException {
         URL myURL = new URL(hypixelGuildURL);
         String response = httpGET(myURL);
         //System.out.println(response);
 
-        JSONObject obj = new JSONObject(response);
+        JSONObject main = new JSONObject(response);
 
 
-        System.out.println(obj.getString("name"));
+        if (!main.getBoolean("success")) {
+            System.out.println("Severe issue with GetGuildInfo, likely that the URL needs updating.");
+            return;
+        }
 
 
+        JSONObject guild = main.getJSONObject("guild");
+
+        JSONArray members = guild.getJSONArray("members");
+
+        String name = guild.getString("name");
+        String tag = guild.getString("tag");
+        int exp = guild.getInt("exp");
+        int memberCount = members.length();
+        String color = guild.getString("tagColor");
+
+
+        System.out.println("Guild " + name + " have the tag " + tag + " displayed in " + color + " and " + exp + " exp and have " + memberCount + " members");
+
+        //create imbed
         EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle("Guild stats for " + name, null);
+        //eb.setColor();
+
+        //add description of the virus from wikipedia
+        // eb.setDescription("");
+
+
+        //add data
+        eb.addField("Guild Tag", tag, true);
+        eb.addField("Total GEXP", Integer.toString(exp), true);
+        eb.addField("Total Member Count", Integer.toString(memberCount), true);
+
+
+        //add a footer
+        //Instant instant = Instant.instant();
+
+        String time = getCurrentTime();
+        eb.setFooter("Powered by Hypixel API, Retrieved at " + time + " UTC", null);
+
+        //add a thumbnail
+        eb.setThumbnail("https://scontent.fcxh2-1.fna.fbcdn.net/v/t31.0-8/20545497_1421019531316844_3777826206999579994_o.png?_nc_cat=110&ccb=2&_nc_sid=09cbfe&_nc_ohc=5CxwfT6drMsAX9K_Ab7&_nc_ht=scontent.fcxh2-1.fna&oh=c9f46729136c3086328b40eb3dd199ef&oe=5FB70D0E");
+
+        //add a image
+        //eb.setImage("https://phil.cdc.gov//PHIL_Images/23311/23311_lores.jpg");
+
+        //send it
+        event.getTextChannel().sendMessage(eb.build()).queue();
 
     }
 
