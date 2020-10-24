@@ -1,7 +1,4 @@
 package com.shenrubot;
-//https://pastebin.com/03sVdXUa
-
-//jda Does anyone know how to use the Hypixel API through Java GET for Guild information? It is so poorly documented...
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -23,11 +20,6 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-//import java.time.Instant;
-//java.*
-//net
-//exceptions
 
 
 
@@ -359,10 +351,41 @@ public class Bot extends ListenerAdapter {
 
     }
 
+    public int getLvl(int exp) {
+        int level = 0;
+        if (exp < 100000) level = 0;
+        else if (exp < 250000) level = 1;
+        else if (exp < 500000) level = 2;
+        else if (exp < 1000000) level = 3;
+        else if (exp < 1750000) level = 4;
+        else if (exp < 2750000) level = 5;
+        else if (exp < 4000000) level = 6;
+        else if (exp < 5500000) level = 7;
+        else if (exp < 7500000) level = 8;
+        else if (exp >= 7500000 && exp < 15000000) level = (int) Math.floor((exp - 7500000) / 2500000) + 9;
+        else if (exp >= 15000000) level = (int) Math.floor((exp - 15000000) / 3000000) + 12;
+        return level;
+    }
+
+    public int xpNeeded(int exp) {
+        //Assign a value to xpneeded based on guild.exp value
+        int xpneeded = 0;
+        if (exp < 100000) xpneeded = 100000 - exp;
+        else if (exp < 250000) xpneeded = 250000 - exp;
+        else if (exp < 500000) xpneeded = 500000 - exp;
+        else if (exp < 1000000) xpneeded = 1000000 - exp;
+        else if (exp < 1750000) xpneeded = 1750000 - exp;
+        else if (exp < 2750000) xpneeded = 2750000 - exp;
+        else if (exp < 4000000) xpneeded = 4000000 - exp;
+        else if (exp < 5500000) xpneeded = 5500000 - exp;
+        else if (exp < 7500000) xpneeded = 7500000 - exp;
+        else if (exp >= 7500001 && exp < 15000000) xpneeded = 15000000 - exp;
+        else if (exp >= 15000000) xpneeded = ((int) Math.round((Math.floor(exp / 3000000)) + 1) * 3000000) - exp;
+        return xpneeded;
+    }
     public void getGuildInfo(@NotNull MessageReceivedEvent event) throws MalformedURLException {
         URL myURL = new URL(hypixelGuildURL);
         String response = httpGET(myURL);
-        //System.out.println(response);
 
         JSONObject main = new JSONObject(response);
 
@@ -382,7 +405,8 @@ public class Bot extends ListenerAdapter {
         int exp = guild.getInt("exp");
         int memberCount = members.length();
         String color = guild.getString("tagColor");
-
+        int level = getLvl(exp);
+        int EXPneeded = xpNeeded(exp);
 
         System.out.println("Guild " + name + " have the tag " + tag + " displayed in " + color + " and " + exp + " exp and have " + memberCount + " members");
 
@@ -392,13 +416,11 @@ public class Bot extends ListenerAdapter {
         eb.setTitle("Guild stats for " + name, null);
         //eb.setColor();
 
-        //add description of the virus from wikipedia
-        // eb.setDescription("");
-
-
         //add data
         eb.addField("Guild Tag", tag, true);
         eb.addField("Total GEXP", Integer.toString(exp), true);
+        eb.addField("Guild Level", Integer.toString(level), true);
+        eb.addField("XP Needed to level up", Integer.toString(EXPneeded), true);
         eb.addField("Total Member Count", Integer.toString(memberCount), true);
 
 
@@ -410,9 +432,6 @@ public class Bot extends ListenerAdapter {
 
         //add a thumbnail
         eb.setThumbnail("https://scontent.fcxh2-1.fna.fbcdn.net/v/t31.0-8/20545497_1421019531316844_3777826206999579994_o.png?_nc_cat=110&ccb=2&_nc_sid=09cbfe&_nc_ohc=5CxwfT6drMsAX9K_Ab7&_nc_ht=scontent.fcxh2-1.fna&oh=c9f46729136c3086328b40eb3dd199ef&oe=5FB70D0E");
-
-        //add a image
-        //eb.setImage("https://phil.cdc.gov//PHIL_Images/23311/23311_lores.jpg");
 
         //send it
         event.getTextChannel().sendMessage(eb.build()).queue();
