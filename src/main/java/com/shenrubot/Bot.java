@@ -53,10 +53,9 @@ public class Bot extends ListenerAdapter {
     }
 
     public static void main(String[] args) throws LoginException, InterruptedException {
-        CountryCodes countrycodes = new CountryCodes();
 
         //init map for country codes
-        map = countrycodes.getMap();
+        map = CountryCodes.getMap();
 
         //login
         try {

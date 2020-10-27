@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class CountryCodes {
-    public Map<String, String> map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    public static Map<String, String> map = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 
-    public CountryCodes() {
+    public static void LoadCountryCodes() {
         map.put("ALL", "ALL");
         map.put("Andorra", "AD");
         map.put("United Arab Emirates", "AE");
@@ -258,7 +258,8 @@ public class CountryCodes {
         map.put("USA", "US");
     }
 
-    public Map<String, String> getMap() {
+    public static Map<String, String> getMap() {
+        LoadCountryCodes();
         return map;
     }
 }
