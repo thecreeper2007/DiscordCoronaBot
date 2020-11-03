@@ -8,7 +8,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -25,7 +27,7 @@ public class Bot extends ListenerAdapter {
         //login
         try {
             String key = Util.getToken(keyloc);
-            JDA jda = new JDABuilder(key).addEventListeners(new Bot()).build();
+            JDA jda = JDABuilder.createDefault(key).addEventListeners(new Bot()).build();
             jda.awaitReady();
             //set game
             jda.getPresence().setActivity(Activity.watching("COVID-19 | Corona?"));
