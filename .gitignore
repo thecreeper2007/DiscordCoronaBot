@@ -214,3 +214,5 @@ local.properties
 # APIkey
 APIkey.txt
 
+#user generated output files that are temp stored
+img.gif
