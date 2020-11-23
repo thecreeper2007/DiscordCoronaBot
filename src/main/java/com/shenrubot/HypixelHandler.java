@@ -54,7 +54,7 @@ public class HypixelHandler {
         //Instant instant = Instant.instant();
 
         String time = Util.getCurrentTime();
-        eb.setFooter("Powered by Hypixel API, Retrieved at " + time + " UTC", null);
+        eb.setFooter("Powered by Hypixel API. More guild info at https://u.nu/15cps", null);
 
         //add a thumbnail
         eb.setThumbnail("https://scontent.fcxh2-1.fna.fbcdn.net/v/t31.0-8/20545497_1421019531316844_3777826206999579994_o.png?_nc_cat=110&ccb=2&_nc_sid=09cbfe&_nc_ohc=5CxwfT6drMsAX9K_Ab7&_nc_ht=scontent.fcxh2-1.fna&oh=c9f46729136c3086328b40eb3dd199ef&oe=5FB70D0E");
