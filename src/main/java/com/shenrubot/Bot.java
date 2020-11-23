@@ -1,5 +1,6 @@
 package com.shenrubot;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -120,6 +121,8 @@ public class Bot extends ListenerAdapter {
             builder.append(encodedURL);
             System.out.println(builder.toString());
             URL url = null;
+            EmbedBuilder embed = null;
+            TextChannel channel = event.getTextChannel();
             try {
                 url = new URL(builder.toString());
             } catch (MalformedURLException e) {
