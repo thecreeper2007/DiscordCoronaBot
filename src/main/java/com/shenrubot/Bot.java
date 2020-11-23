@@ -121,7 +121,7 @@ public class Bot extends ListenerAdapter {
             builder.append(encodedURL);
             System.out.println(builder.toString());
             URL url = null;
-            EmbedBuilder embed = null;
+            EmbedBuilder embed = new EmbedBuilder();
             TextChannel channel = event.getTextChannel();
             try {
                 url = new URL(builder.toString());
