@@ -1,13 +1,13 @@
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
+.github
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
+build
 # Generated files
 .idea/**/contentModel.xml
 
@@ -36,7 +36,7 @@
 # .idea/modules
 # *.iml
 # *.ipr
-
+.idea
 # CMake
 cmake-build-*/
 
@@ -81,7 +81,7 @@ Icon
 
 # Thumbnails
 ._*
-
+META-INF
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
@@ -216,3 +216,14 @@ APIkey.txt
 
 #user generated output files that are temp stored
 img.gif
+
+#Gradle
+.gradle/
+build/
+
+
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
