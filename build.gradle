@@ -16,8 +16,8 @@ repositories {
 
 dependencies {
 
-    //jda
-    implementation 'net.dv8tion:JDA:4.2.0_214'
+    //jda implimentation
+    implementation 'net.dv8tion:JDA:4.2.0_222'
 
     // https://mvnrepository.com/artifact/org.json/json
     compile group: 'org.json', name: 'json', version: '20200518'
