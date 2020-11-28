@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -26,7 +28,6 @@ public class HypixelHandler {
         JSONObject guild = main.getJSONObject("guild");
 
         JSONArray members = guild.getJSONArray("members");
-
         String name = guild.getString("name");
         String tag = guild.getString("tag");
         int exp = guild.getInt("exp");
@@ -35,7 +36,7 @@ public class HypixelHandler {
         int level = getLvl(exp);
         int EXPneeded = xpNeeded(exp);
 
-        System.out.println("Guild " + name + " have the tag " + tag + " displayed in " + color + " and " + exp + " exp and have " + memberCount + " members");
+        //System.out.println("Guild " + name + " have the tag " + tag + " displayed in " + color + " and " + exp + " exp and have " + memberCount + " members");
 
         //create imbed
         EmbedBuilder eb = new EmbedBuilder();
@@ -44,6 +45,14 @@ public class HypixelHandler {
         //eb.setColor();
 
         //add data
+        Color ecolor;
+        try {
+            Field field = Class.forName("java.awt.Color").getField(color);
+            ecolor = (Color) field.get(null);
+        } catch (Exception e) {
+            ecolor = null; // Not defined
+        }
+        eb.setColor(ecolor);
         eb.addField("Guild Tag", tag, true);
         eb.addField("Total GEXP", Integer.toString(exp), true);
         eb.addField("Guild Level", Integer.toString(level), true);

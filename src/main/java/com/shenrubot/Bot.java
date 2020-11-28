@@ -30,8 +30,8 @@ public class Bot extends ListenerAdapter {
             jda.awaitReady();
             //set game
 
-            //jda.getPresence().setActivity(Activity.watching("COVID-19 | Corona?"));
-            jda.getPresence().setActivity(Activity.watching("Maintnance Mode"));
+            jda.getPresence().setActivity(Activity.watching("COVID-19 | Corona?"));
+            //jda.getPresence().setActivity(Activity.watching("Maintnance Mode"));
 
         } catch (Exception e) {
             System.err.println("Cannot login to (or start) Discord. is the API key correct?");
@@ -69,7 +69,7 @@ public class Bot extends ListenerAdapter {
         URL url = new URL(imageUrl);
         String fileName = url.getFile();
         String destName = "/Users/the_creeper2007/Desktop/DiscordAutoReply/src/main/java/com/shenrubot/img.gif";
-        System.out.println(destName);
+        //System.out.println(destName);
 
         InputStream is = url.openStream();
         OutputStream os = new FileOutputStream(destName);
@@ -113,13 +113,13 @@ public class Bot extends ListenerAdapter {
             String trimmedMsg = msg.substring(7);
             trimmedMsg = trimmedMsg.trim();
             StringBuilder builder = new StringBuilder(WolframURL);
-            System.out.println(builder.toString());
+            //System.out.println(builder.toString());
 
             @Deprecated
             String encodedURL = URLEncoder.encode(trimmedMsg);
-            System.out.println(encodedURL);
+            //System.out.println(encodedURL);
             builder.append(encodedURL);
-            System.out.println(builder.toString());
+            //System.out.println(builder.toString());
             URL url = null;
             EmbedBuilder embed = new EmbedBuilder();
             TextChannel channel = event.getTextChannel();
@@ -131,7 +131,7 @@ public class Bot extends ListenerAdapter {
             String strout = httpGET(url);
             if (strout.equals("There has been an IO error")) {
                 File file = new File("/Users/the_creeper2007/Desktop/DiscordAutoReply/src/main/java/com/shenrubot/nooutput.gif");
-                embed.setImage("attachment://calc.gif").setDescription(trimmedMsg).setFooter("Powered by WolframAlpha");
+                embed.setImage("attachment://calc.gif").setDescription(trimmedMsg).setFooter("Powered by Wolfram|Alpha");
                 channel.sendFile(file).embed(embed.build()).queue();
                 //exits
             } else {
@@ -144,7 +144,7 @@ public class Bot extends ListenerAdapter {
             if (!strout.equals("There has been an IO error")) {
 
                 File file = new File("/Users/the_creeper2007/Desktop/DiscordAutoReply/src/main/java/com/shenrubot/img.gif");
-                embed.setImage("attachment://calc.gif").setDescription(trimmedMsg).setFooter("Powered by WolframAlpha.");
+                embed.setImage("attachment://calc.gif").setDescription(trimmedMsg).setFooter("Powered by Wolfram|Alpha.");
                 channel.sendFile(file).embed(embed.build()).queue();
             }
         }
